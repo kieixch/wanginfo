@@ -323,7 +323,7 @@ export default function DetailPage({
               <button
                 onClick={toggleReminder}
                 disabled={reminding}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-medium transition ${
+                className={`inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl font-medium transition leading-none ${
                   reminded
                     ? "bg-red-100 dark:bg-red-900/30 text-red-600 hover:bg-red-200"
                     : "primary-btn"

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/app/lib/supabase";
 import toast from "react-hot-toast";
-import { Eye, EyeOff, Mail, Lock, User, UserPlus } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, UserPlus, ArrowLeft } from "lucide-react";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -65,6 +65,12 @@ export default function RegisterPage() {
 
       <div className="flex items-center justify-center p-6 bg-gray-50 dark:bg-slate-900">
         <div className="w-full max-w-md">
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-gray-500 dark:text-gray-400 hover:text-indigo-600 mb-6 text-sm transition"
+          >
+            <ArrowLeft size={16} /> Back to Home
+          </Link>
           <div className="text-center mb-10">
             <h1 className="text-4xl font-bold text-gray-800 dark:text-white">
               Create Account
@@ -149,7 +155,7 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={loading}
-              className="primary-btn w-full flex items-center justify-center gap-2"
+              className="primary-btn w-full inline-flex items-center justify-center gap-1.5 leading-none"
             >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />

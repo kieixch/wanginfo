@@ -25,7 +25,7 @@ export default function Navbar() {
               Home
             </Link>
             <Link href="/#informations" className="hover:text-blue-600 transition">
-              Seminars & Events
+              Events
             </Link>
           </div>
 
@@ -83,7 +83,7 @@ export default function Navbar() {
               onClick={() => setMobileOpen(false)}
               className="block px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"
             >
-              Seminars & Events
+              Events
             </Link>
 
             {user ? (

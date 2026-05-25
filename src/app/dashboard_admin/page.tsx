@@ -208,7 +208,7 @@ export default function DashboardAdmin() {
   return (
     <div className="min-h-screen flex bg-gray-50 dark:bg-slate-900">
       <aside
-        className={`sidebar fixed md:sticky top-0 z-40 w-72 min-h-screen p-6 text-white transition-transform duration-300 flex flex-col ${
+        className={`sidebar fixed top-0 z-40 w-72 min-h-screen p-6 text-white transition-transform duration-300 flex flex-col ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
         }`}
       >
@@ -232,13 +232,13 @@ export default function DashboardAdmin() {
               setForm({ ...defaultForm });
               setSidebarOpen(false);
             }}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition"
+            className="w-full inline-flex items-center gap-1.5 px-4 py-3 rounded-xl hover:bg-white/10 transition"
           >
             <Plus size={18} /> Add Event
           </button>
           <button
             onClick={() => setShowForm(false)}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-white/10 transition"
+            className="w-full inline-flex items-center gap-1.5 px-4 py-3 rounded-xl hover:bg-white/10 transition"
           >
             <Clock size={18} /> All Events
           </button>
@@ -260,7 +260,7 @@ export default function DashboardAdmin() {
         </div>
       </aside>
 
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen md:ml-72">
         <header className="sticky top-0 z-30 bg-white/80 dark:bg-slate-800/80 backdrop-blur border-b border-gray-200 dark:border-gray-700 px-6 py-4 flex items-center justify-between">
           <button
             onClick={() => setSidebarOpen(true)}

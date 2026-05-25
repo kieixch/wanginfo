@@ -16,18 +16,18 @@ const slides = [
 
 export default function Hero() {
   return (
-    <section className="min-h-[90vh] grid md:grid-cols-2 gap-10 items-center px-6 md:px-16 py-20">
-      <div>
-        <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold leading-tight text-gray-800 dark:text-white">
+    <section className="min-h-[80vh] md:min-h-[90vh] flex flex-col-reverse md:grid md:grid-cols-2 gap-6 md:gap-10 items-center px-5 md:px-16 py-12 md:py-20">
+      <div className="text-center md:text-left">
+        <h1 className="text-2xl sm:text-4xl md:text-6xl font-bold leading-tight text-gray-800 dark:text-white">
           Get Information About Seminars & Campus Events
         </h1>
-        <p className="mt-6 text-gray-500 dark:text-gray-400 text-lg leading-relaxed">
+        <p className="mt-3 md:mt-6 text-gray-500 dark:text-gray-400 text-sm md:text-lg leading-relaxed">
           Find the latest seminars, competitions, workshops, and student
           activities easily.
         </p>
         <a
           href="#informations"
-          className="primary-btn mt-10 inline-block"
+          className="primary-btn mt-4 md:mt-10 inline-flex items-center justify-center gap-1.5 w-full sm:w-auto text-sm md:text-base"
         >
           Explore Now
         </a>
@@ -48,7 +48,7 @@ export default function Hero() {
                 alt={slide.alt}
                 width={700}
                 height={500}
-                className="rounded-3xl w-full h-[300px] sm:h-[400px] md:h-[500px] object-cover"
+                className="rounded-3xl w-full h-[180px] sm:h-[280px] md:h-[500px] object-cover"
               />
             </SwiperSlide>
           ))}

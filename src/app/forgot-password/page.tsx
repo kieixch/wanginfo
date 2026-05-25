@@ -80,7 +80,7 @@ export default function ForgotPasswordPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="primary-btn w-full flex items-center justify-center gap-2"
+                className="primary-btn w-full inline-flex items-center justify-center gap-1.5 leading-none"
               >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
