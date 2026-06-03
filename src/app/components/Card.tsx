@@ -2,13 +2,16 @@
 
 import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import { Clock, ImageOff, CheckCircle, XCircle } from "lucide-react";
+import { parseLocalDate } from "@/app/lib/date";
 
 type EventCardProps = {
   id: string;
   title: string;
   short_description: string;
   category: string;
+  event_type?: string | null;
   event_date: string;
   event_end_date?: string;
   image: string;
@@ -26,9 +29,9 @@ function EventStatus({
   useEffect(() => {
     const update = () => {
       const now = Date.now();
-      const start = new Date(event_date).getTime();
+      const start = parseLocalDate(event_date).getTime();
       const end = event_end_date
-        ? new Date(event_end_date).getTime()
+        ? parseLocalDate(event_end_date).getTime()
         : start + 86400000;
 
       if (now < start) {
@@ -76,12 +79,22 @@ export default function Card({
   title,
   short_description,
   category,
+  event_type,
   event_date,
   event_end_date,
   image,
 }: EventCardProps) {
   const [imgError, setImgError] = useState(false);
+  const [showCategoryBadge, setShowCategoryBadge] = useState(true);
   const handleImgError = useCallback(() => setImgError(true), []);
+
+  useEffect(() => {
+    if (!event_type) return;
+    const timer = setInterval(() => {
+      setShowCategoryBadge((prev) => !prev);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [event_type]);
 
   return (
     <Link href={`/detail/${id}`}>
@@ -99,9 +112,33 @@ export default function Card({
               <ImageOff size={32} className="text-white/60" />
             </div>
           )}
-          <span className="absolute top-3 left-3 text-xs font-medium px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 text-indigo-600 dark:text-indigo-400 backdrop-blur">
-            {category}
-          </span>
+          <div className="absolute top-3 left-3 overflow-hidden" style={{ height: "26px" }}>
+            <AnimatePresence mode="wait">
+              {showCategoryBadge || !event_type ? (
+                <motion.span
+                  key="cat"
+                  initial={{ x: 40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -40, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="block text-xs font-medium px-3 py-1 rounded-full bg-white/90 dark:bg-slate-900/90 text-indigo-600 dark:text-indigo-400 backdrop-blur whitespace-nowrap"
+                >
+                  {category}
+                </motion.span>
+              ) : (
+                <motion.span
+                  key="type"
+                  initial={{ x: 40, opacity: 0 }}
+                  animate={{ x: 0, opacity: 1 }}
+                  exit={{ x: -40, opacity: 0 }}
+                  transition={{ duration: 0.25 }}
+                  className="block text-xs font-medium px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/80 text-green-700 dark:text-green-300 backdrop-blur whitespace-nowrap"
+                >
+                  {event_type}
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
         <div className="p-5">
           <h3 className="text-lg font-bold text-gray-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition truncate">
@@ -116,7 +153,7 @@ export default function Card({
               event_end_date={event_end_date}
             />
             <span className="text-xs text-gray-400">
-              {new Date(event_date).toLocaleDateString("en-GB", {
+              {parseLocalDate(event_date).toLocaleDateString("en-GB", {
                 day: "numeric",
                 month: "short",
               })}

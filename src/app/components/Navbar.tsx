@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import DarkModeToggle from "./DarkModeToggle";
-import { Menu, X, LogOut, LayoutDashboard } from "lucide-react";
+import { Menu, X, LogOut, LayoutDashboard, Bell } from "lucide-react";
 
 export default function Navbar() {
   const { user, profile, signOut } = useAuth();
@@ -34,6 +34,12 @@ export default function Navbar() {
 
             {user ? (
               <div className="hidden md:flex items-center gap-3">
+                <Link
+                  href="/notifications"
+                  className="flex items-center gap-1 px-3 py-2 rounded-xl text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition text-sm font-medium"
+                >
+                  <Bell size={16} />
+                </Link>
                 {profile?.role === "admin" && (
                   <Link
                     href="/dashboard_admin"
@@ -88,6 +94,14 @@ export default function Navbar() {
 
             {user ? (
               <>
+                <Link
+                  href="/notifications"
+                  onClick={() => setMobileOpen(false)}
+                  className="block px-4 py-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-800 font-medium"
+                >
+                  <Bell size={16} className="inline mr-2" />
+                  Notifications
+                </Link>
                 {profile?.role === "admin" && (
                   <Link
                     href="/dashboard_admin"

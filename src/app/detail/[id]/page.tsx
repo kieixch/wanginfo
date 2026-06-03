@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState, use, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/app/lib/supabase";
 import { useAuth } from "@/app/context/AuthContext";
 import Navbar from "@/app/components/Navbar";
 import Footer from "@/app/components/Footer";
+import { parseLocalDate } from "@/app/lib/date";
 import toast from "react-hot-toast";
 import {
   Clock,
@@ -19,6 +20,7 @@ import {
   ImageOff,
   CheckCircle,
   XCircle,
+  Trophy,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -28,6 +30,7 @@ type Event = {
   description: string;
   short_description: string;
   category: string;
+  event_type: string | null;
   event_date: string;
   event_end_date: string | null;
   images: string[];
@@ -47,9 +50,9 @@ function EventStatus({
   useEffect(() => {
     const update = () => {
       const now = Date.now();
-      const start = new Date(event_date).getTime();
+      const start = parseLocalDate(event_date).getTime();
       const end = event_end_date
-        ? new Date(event_end_date).getTime()
+        ? parseLocalDate(event_end_date).getTime()
         : start + 86400000;
 
       if (now < start) {
@@ -107,6 +110,22 @@ export default function DetailPage({
   const [reminding, setReminding] = useState(false);
   const [imgError, setImgError] = useState(false);
 
+  const now = useSyncExternalStore(
+    (cb) => {
+      const id = setInterval(cb, 1000);
+      return () => clearInterval(id);
+    },
+    () => Date.now(),
+    () => 0
+  );
+
+  const isEnded = event
+    ? now >=
+      (event.event_end_date
+        ? parseLocalDate(event.event_end_date).getTime()
+        : parseLocalDate(event.event_date).getTime() + 86400000)
+    : false;
+
   useEffect(() => {
     const fetchEvent = async () => {
       const { data } = await supabase
@@ -132,6 +151,10 @@ export default function DetailPage({
   }, [user, id]);
 
   const toggleReminder = async () => {
+    if (isEnded) {
+      toast.error("Cannot set reminder for an ended event");
+      return;
+    }
     if (!user) {
       toast.error("Please login to set a reminder");
       router.push("/login");
@@ -149,6 +172,11 @@ export default function DetailPage({
       if (error) {
         toast.error("Failed to remove reminder");
       } else {
+        await supabase
+          .from("notifications")
+          .delete()
+          .eq("user_id", user.id)
+          .eq("event_id", id);
         setReminded(false);
         toast.success("Reminder removed");
       }
@@ -159,6 +187,19 @@ export default function DetailPage({
       if (error) {
         toast.error("Failed to set reminder");
       } else {
+        await supabase.from("notifications").insert({
+          user_id: user.id,
+          event_id: id,
+          title: "Reminder Set",
+          message: `You set a reminder for "${event?.title}" on ${parseLocalDate(
+            event!.event_date
+          ).toLocaleDateString("en-GB", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}`,
+        });
         setReminded(true);
         toast.success("Reminder set! We'll notify you.");
       }
@@ -267,9 +308,16 @@ export default function DetailPage({
           </div>
 
           <div>
-            <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400 mb-4">
-              {event.category}
-            </span>
+            <div className="flex flex-wrap gap-2 mb-4">
+              <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/50 text-indigo-600 dark:text-indigo-400">
+                {event.category}
+              </span>
+              {event.event_type && (
+                <span className="inline-block text-xs font-medium px-3 py-1 rounded-full bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400">
+                  {event.event_type}
+                </span>
+              )}
+            </div>
 
             <h1 className="text-3xl md:text-5xl font-bold text-gray-800 dark:text-white">
               {event.title}
@@ -280,7 +328,7 @@ export default function DetailPage({
                 <Calendar size={18} />
                 <span>
                   Start:{" "}
-                  {new Date(event.event_date).toLocaleDateString("en-GB", {
+                  {parseLocalDate(event.event_date).toLocaleDateString("en-GB", {
                     weekday: "long",
                     year: "numeric",
                     month: "long",
@@ -295,7 +343,7 @@ export default function DetailPage({
                   <Calendar size={18} />
                   <span>
                     End:{" "}
-                    {new Date(event.event_end_date).toLocaleDateString("en-GB", {
+                    {parseLocalDate(event.event_end_date).toLocaleDateString("en-GB", {
                       weekday: "long",
                       year: "numeric",
                       month: "long",
@@ -322,9 +370,11 @@ export default function DetailPage({
             <div className="mt-8 flex flex-col sm:flex-row gap-4">
               <button
                 onClick={toggleReminder}
-                disabled={reminding}
+                disabled={reminding || isEnded}
                 className={`inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl font-medium transition leading-none ${
-                  reminded
+                  isEnded
+                    ? "bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed"
+                    : reminded
                     ? "bg-red-100 dark:bg-red-900/30 text-red-600 hover:bg-red-200"
                     : "primary-btn"
                 }`}
@@ -335,12 +385,29 @@ export default function DetailPage({
                   <>
                     <BellOff size={18} /> Remove Reminder
                   </>
+                ) : isEnded ? (
+                  <>
+                    <BellOff size={18} /> Event Ended
+                  </>
                 ) : (
                   <>
                     <Bell size={18} /> Set Reminder
                   </>
                 )}
               </button>
+              {event.event_type === "Campus Tournament" && !isEnded && (
+                <Link
+                  href={`/register-tournament/${event.id}`}
+                  className="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl font-medium transition leading-none bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <Trophy size={18} /> Register Tournament
+                </Link>
+              )}
+              {event.event_type === "Campus Tournament" && isEnded && (
+                <span className="inline-flex items-center justify-center gap-1.5 px-6 py-3 rounded-xl font-medium bg-gray-300 dark:bg-gray-700 text-gray-500 cursor-not-allowed">
+                  <Trophy size={18} /> Registration Closed
+                </span>
+              )}
             </div>
 
             {event.embed_map && (

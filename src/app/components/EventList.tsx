@@ -4,12 +4,14 @@ import { useEffect, useState, useMemo } from "react";
 import { supabase } from "@/app/lib/supabase";
 import Card from "./Card";
 import { Search, ChevronLeft, ChevronRight } from "lucide-react";
+import { parseLocalDate } from "@/app/lib/date";
 
 type Event = {
   id: string;
   title: string;
   short_description: string;
   category: string;
+  event_type: string | null;
   event_date: string;
   event_end_date: string | null;
   images: string[];
@@ -68,28 +70,24 @@ export default function EventList() {
       })
       .sort(
         (a, b) =>
-          new Date(a.event_date).getTime() - new Date(b.event_date).getTime()
+          parseLocalDate(a.event_date).getTime() - parseLocalDate(b.event_date).getTime()
       );
     const past = filtered
       .filter((e) => {
         const end = e.event_end_date
-          ? new Date(e.event_end_date)
-          : new Date(e.event_date);
+          ? parseLocalDate(e.event_end_date)
+          : parseLocalDate(e.event_date);
         return end < now;
       })
       .sort(
         (a, b) =>
-          new Date(b.event_date).getTime() - new Date(a.event_date).getTime()
+          parseLocalDate(b.event_date).getTime() - parseLocalDate(a.event_date).getTime()
       );
     return [...upcoming, ...past];
   }, [filtered]);
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / PER_PAGE));
   const paginated = sorted.slice((page - 1) * PER_PAGE, page * PER_PAGE);
-
-  useEffect(() => {
-    setPage(1);
-  }, [search, category]);
 
   if (loading) {
     return (
@@ -110,14 +108,20 @@ export default function EventList() {
           <input
             type="text"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
             placeholder="Search events..."
             className="input-modern pl-10 text-gray-800 dark:text-gray-200"
           />
         </div>
         <select
           value={category}
-          onChange={(e) => setCategory(e.target.value)}
+          onChange={(e) => {
+            setCategory(e.target.value);
+            setPage(1);
+          }}
           className="input-modern flex-1 text-gray-800 dark:text-gray-200"
         >
           {categories.map((c) => (
@@ -140,6 +144,7 @@ export default function EventList() {
                 title={event.title}
                 short_description={event.short_description}
                 category={event.category}
+                event_type={event.event_type}
                 event_date={event.event_date}
                 event_end_date={event.event_end_date || undefined}
                 image={event.images?.[0] || ""}
